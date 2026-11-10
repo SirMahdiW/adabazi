@@ -147,16 +147,31 @@
 
   /* ----- خانه ----- */
 
+  var HOW_STEPS = [
+    { icon: 'users', title: 'گروه‌ها را بسازید', desc: 'نام، رنگ و ترتیب تیم‌ها را مشخص کنید؛ از ۲ تا ۶ تیم می‌توانند در یک بازی شرکت کنند.' },
+    { icon: 'spark', title: 'حالت بازی را انتخاب کنید', desc: 'سرعت، ضرب‌المثل، کلمات دسته‌بندی‌شده یا ترانه؛ هر حالت قوانین و امتیازدهی مستقلی دارد.' },
+    { icon: 'book', title: 'کلمه بگیرید و اجرا کنید', desc: 'کلمه مخفی است و با «شروع تایمر» اجرا شروع می‌شود؛ در پایان نوبت نتیجه ثبت می‌شود.' }
+  ];
+
   function renderHome() {
     var s = Store.stats;
     var el = h('<div></div>');
 
     el.appendChild(h(
       '<section class="clay hero">' +
-      '<div class="hero-tags"><span class="tag">بدون تبلیغات</span><span class="tag">بدون خرید</span><span class="tag">۱۶,۳۰۵ کلمه</span></div>' +
-      '<h1>بازی گروهی<br>پانتومیم و حدس کلمه</h1>' +
-      '<p>دورهم جمع شو، تیم بچین و کلمه‌ها را بازی کن. همه امکانات رایگان و نامحدود.</p>' +
+      '<div class="hero-tags"><span class="tag">رایگان</span><span class="tag">بدون تبلیغات</span><span class="tag">بدون خرید درون‌برنامه‌ای</span><span class="tag">۱۶,۳۰۵ کلمه</span></div>' +
+      '<h1>بازی گروهی<br>پانتومیم <span class="grad-text">و حدس کلمه</span></h1>' +
+      '<p>یک تیم کلمه می‌خواند و اجرا می‌کند؛ تیم دیگر حدس می‌زند. دورهای کوتاه، امتیازهای درشت، ذهنیت جمعی و بدون تبلیغات.</p>' +
+      '<div class="hero-actions">' +
       '<button type="button" class="btn btn-primary btn-lg" id="cta-play">' + Icons.get('play') + ' شروع بازی</button>' +
+      '<button type="button" class="btn btn-ghost btn-lg" id="cta-how">' + Icons.get('dice') + ' چیدمان بازی</button>' +
+      '</div>' +
+      '<div class="hero-stats">' +
+      '<div class="hs-item"><strong>۱۶,۳۰۵</strong><span>کلمه ادبیات</span></div>' +
+      '<div class="hs-item"><strong>۱,۰۲۹</strong><span>چالش بوم</span></div>' +
+      '<div class="hs-item"><strong>۵۰</strong><span>ترانه</span></div>' +
+      '<div class="hs-item"><strong>' + s.games.toLocaleString('fa-IR') + '</strong><span>بازی انجام‌شده</span></div>' +
+      '</div>' +
       '</section>'
     ));
 
@@ -178,6 +193,21 @@
     });
 
     el.appendChild(bento);
+
+    var howWrap = h('<div class="bento" style="margin-top:var(--s-4)"></div>');
+    var steps = h('<div class="how-grid"></div>');
+    HOW_STEPS.forEach(function (st, i) {
+      var card = h(
+        '<button type="button" class="clay pressable how-card" data-how="' + i + '">' +
+        '<span class="h-top"><span class="h-num">' + (i + 1) + '</span><span class="h-icon">' + Icons.get(st.icon) + '</span></span>' +
+        '<h3>' + st.title + '</h3>' +
+        '<p>' + st.desc + '</p>' +
+        '</button>'
+      );
+      steps.appendChild(card);
+    });
+    howWrap.appendChild(steps);
+    el.appendChild(howWrap);
 
     var stats = h('<div class="bento" style="margin-top:var(--s-4)"></div>');
     stats.appendChild(mini('chart', 'بازی‌ها', s.games.toLocaleString('fa-IR'), 'تعداد کل بازی‌ها', '#7C3AED', 'stats'));
@@ -202,6 +232,10 @@
     ));
 
     el.querySelector('#cta-play').addEventListener('click', function () { beep('click'); pendingMode = 'adabazi'; go('setup'); });
+    el.querySelector('#cta-how').addEventListener('click', function () { beep('click'); go('setup'); });
+    el.querySelectorAll('[data-how]').forEach(function (b) {
+      b.addEventListener('click', function () { beep('click'); go('setup'); });
+    });
     el.querySelector('#open-settings').addEventListener('click', function () { beep('click'); go('settings'); });
     el.querySelector('#open-about').addEventListener('click', function () { beep('click'); go('about'); });
     el.querySelectorAll('[data-stats], [data-history]').forEach(function (b) {

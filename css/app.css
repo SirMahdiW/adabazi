@@ -764,6 +764,33 @@ button.clay, a.clay, [role="button"].clay { cursor: pointer; color: inherit; fon
 }
 .foot a { color: var(--text-dim); }
 
+/* ---------- صفحه اصلی ---------- */
+.grad-text {
+  background: linear-gradient(110deg, var(--violet-2), var(--rose) 45%, var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-3); }
+.hero-stats {
+  display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4);
+  margin-top: var(--s-5); padding-top: var(--s-4);
+  border-top: var(--bw) solid var(--line);
+}
+.hs-item { display: flex; flex-direction: column; gap: 2px; min-width: 70px; }
+.hs-item strong { font-family: var(--font-display); font-size: 26px; font-weight: 400; background: linear-gradient(120deg, var(--violet-2), var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hs-item span { font-size: var(--fs-xs); color: var(--text-dim); }
+
+.how-grid { display: grid; grid-template-columns: 1fr; gap: var(--s-3); }
+.how-card { position: relative; display: flex; flex-direction: column; gap: 8px; padding: var(--s-4) var(--s-4) var(--s-5); overflow: hidden; text-align: right; }
+.how-card .h-top { display: flex; align-items: center; justify-content: space-between; }
+.how-card .h-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 15px; background: linear-gradient(150deg, var(--violet-2), var(--violet)); color: #fff; box-shadow: inset 2px 2px 0 rgba(255,255,255,.35), inset -3px -3px 8px rgba(0,0,0,.45); }
+.how-card .h-icon svg { width: 22px; height: 22px; }
+.how-card h3 { font-family: var(--font-display); font-size: var(--fs-h3); margin: 0; position: relative; z-index: 1; }
+.how-card p { margin: 0; color: var(--text-dim); font-size: var(--fs-sm); position: relative; z-index: 1; line-height: 1.9; }
+.how-card .h-num { position: absolute; top: -18px; inset-inline-end: var(--s-3); font-family: var(--font-display); font-size: 96px; line-height: .75; color: rgba(255,255,255,.05); pointer-events: none; }
+@media (min-width: 640px) { .how-grid { grid-template-columns: repeat(3, 1fr); } }
+
 /* ---------- واکنش‌گرایی ---------- */
 @media (max-width: 380px) {
   .span-4, .span-3, .span-2 { grid-column: span 6; }

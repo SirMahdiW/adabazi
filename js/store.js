@@ -9,6 +9,7 @@
       rounds: 3,          // تعداد دور
       roundTime: 60,      // ثانیه هر نوبت
       wordsPerTurn: 5,    // کلمه در هر نوبت
+      timeReward: true,   // پاداش زمان باقی‌مانده
       sound: true,
       haptics: true,
       teamNames: ['قرمز', 'آبی'],

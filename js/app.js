@@ -235,6 +235,7 @@
         rounds: st.rounds,
         roundTime: st.roundTime,
         wordsPerTurn: st.wordsPerTurn,
+        timeReward: !!st.timeReward,
         cats: data.usableCategories.map(function (c) { return c.cid; }),
         teamNames: st.teamNames.slice(),
         teamColors: st.teamColors.slice()
@@ -397,7 +398,8 @@
       teams: d.teamNames.map(function (n, i) { return { name: n.trim() || ('تیم ' + (i + 1)), color: d.teamColors[i] }; }),
       rounds: d.rounds,
       roundTime: d.roundTime,
-      wordsPerTurn: d.wordsPerTurn
+      wordsPerTurn: d.wordsPerTurn,
+      timeReward: !!d.timeReward
     });
 
     if (!engine.pool.length) { toast('محتوایی برای این انتخاب نیست'); return; }
@@ -436,9 +438,12 @@
 
     var controls = h(
       '<div class="controls">' +
+      '<button type="button" class="btn btn-primary" id="c-show">' + Icons.get('eye') + '<span>نمایش کلمه</span></button>' +
+      '<button type="button" class="btn btn-primary" id="c-start">' + Icons.get('play2') + '<span>شروع تایمر</span></button>' +
       '<button type="button" class="btn btn-ok" id="c-ok">' + Icons.get('check') + '<span>درست</span></button>' +
       '<button type="button" class="btn btn-bad" id="c-bad">' + Icons.get('x') + '<span>غلط</span></button>' +
       '<button type="button" class="btn btn-skip" id="c-skip">' + Icons.get('skip') + '<span>رد</span></button>' +
+      '<button type="button" class="btn btn-skip" id="c-swap">' + Icons.get('swap') + '<span>تعویض کلمه</span></button>' +
       '<button type="button" class="btn btn-ghost btn-wide" id="c-undo">' + Icons.get('undo') + '<span>بازگشت (لغو آخرین کلمه)</span></button>' +
       '<button type="button" class="btn btn-ghost btn-wide" id="c-pause">' + Icons.get('pause') + '<span>مکث</span></button>' +
       '</div>'
@@ -496,6 +501,13 @@
         var cat = data.usableCategories.filter(function (c) { return (data.adabazi[String(c.cid)] || []).some(function (x) { return x[0] === w.text && x[1] === w.score; }); })[0];
         if (cat) meta.appendChild(h('<span class="tag">' + esc(cat.fa) + '</span>'));
       }
+      if (engine.phase === 'setup') {
+        txt.textContent = 'کلمه مخفی است';
+        txt.classList.remove('len-m', 'len-l', 'len-xl');
+        txt.style.animation = 'none';
+        sub.textContent = '';
+        return;
+      }
       txt.textContent = w.text;
       var len = w.text.length;
       txt.classList.toggle('len-m', len > 14 && len <= 30);
@@ -524,7 +536,7 @@
       wrap.classList.toggle('is-urgent', left <= 10);
     }
 
-    function afterAction(kind) {
+    function afterAction() {
       paintScore();
       paintHead();
       if (engine.over) {
@@ -537,23 +549,33 @@
 
     function answer(kind) {
       if (!engine || engine.over) return;
+      if (engine.phase !== 'show' && engine.phase !== 'running') return;
       var rec = engine.answer(kind);
       if (!rec) return;
       if (kind === 'correct') { beep('correct'); vibrate(14); }
       else if (kind === 'wrong') { beep('wrong'); vibrate([18, 40, 18]); }
       else { beep('skip'); vibrate(10); }
-      afterAction(kind);
+      afterAction();
     }
 
+    el.querySelector('#c-show').addEventListener('click', function () {
+      if (engine.phase === 'setup') { engine.show(); afterAction(); var sb = el.querySelector('#c-start'); if (sb) sb.style.display = 'inline-flex'; }
+    });
+    el.querySelector('#c-start').addEventListener('click', function () {
+      if (engine.phase === 'show') { engine.startTimer(); afterAction(); var sb = el.querySelector('#c-start'); if (sb) sb.style.display = 'none'; }
+    });
     el.querySelector('#c-ok').addEventListener('click', function () { answer('correct'); });
     el.querySelector('#c-bad').addEventListener('click', function () { answer('wrong'); });
     el.querySelector('#c-skip').addEventListener('click', function () { answer('skip'); });
+    el.querySelector('#c-swap').addEventListener('click', function () {
+      if (engine.phase === 'show' || engine.phase === 'running') { engine.swapWord(); afterAction(); }
+    });
 
     el.querySelector('#c-undo').addEventListener('click', function () {
       if (engine.undo()) {
         beep('click');
         paintScore(); paintHead(); paintWord();
-        if (engine.over === false && timerId === null) startTimer();
+        if (engine.phase === 'running' && timerId === null) startTimer();
         toast('آخرین کلمه لغو شد');
       } else {
         toast('چیزی برای بازگشت نیست');
@@ -561,12 +583,12 @@
     });
 
     el.querySelector('#c-pause').addEventListener('click', function () {
-      if (timerId) {
-        stopTimer();
+      if (engine.phase === 'running') {
+        engine.pauseTimer();
         toast('بازی متوقف شد');
         this.innerHTML = Icons.get('play2') + '<span>ادامه</span>';
-      } else {
-        startTimer();
+      } else if (engine.phase === 'paused') {
+        engine.startTimer();
         toast('ادامه بازی');
         this.innerHTML = Icons.get('pause') + '<span>مکث</span>';
       }
@@ -577,24 +599,26 @@
     paintWord();
     paintTimer();
     startTimer();
+    var startBtn = el.querySelector('#c-start');
+    if (startBtn) startBtn.style.display = (engine.phase === 'show') ? 'inline-flex' : 'none';
 
     function startTimer() {
       stopTimer();
       lastTickShown = null;
       timerId = setInterval(function () {
-        if (!engine || engine.over) { stopTimer(); return; }
+        if (!engine || engine.phase !== 'running') { stopTimer(); return; }
         var left = engine.tick();
         paintTimer();
-        if (left <= 10 && left > 0) beep('tick');
         if (left <= 0) {
           stopTimer();
-          engine.endTurn();
           beep('end');
           vibrate([30, 60, 30]);
           paintScore();
           paintHead();
-          finishTurn();
+          if (engine.over) finishTurn();
+          return;
         }
+        if (left <= 10 && left > 0) beep('tick');
       }, 1000);
     }
 
@@ -616,7 +640,6 @@
         engine.continueAfterTurn();
         paintHead(); paintScore(); paintWord();
         paintTimer();
-        startTimer();
         toast('نوبت ' + engine.team().name);
       }
     }
@@ -646,7 +669,6 @@
             beep('start');
             paintHead(); paintScore(); paintWord();
             paintTimer();
-            startTimer();
           }
         }]
       });
@@ -862,7 +884,7 @@
     beep('click');
     if (route === 'play') {
       var p = document.getElementById('c-pause');
-      var wasRunning = !!timerId;
+      var wasRunning = engine.phase === 'running';
       if (wasRunning && p) p.click(); // مکث → تایمر متوقف می‌شود
       modal({
         title: 'خروج از بازی؟',

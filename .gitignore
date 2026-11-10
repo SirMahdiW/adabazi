@@ -1,0 +1,15 @@
+# سیستمی
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ویرایشگرها
+.vscode/
+.idea/
+
+# وابستگی‌ها
+node_modules/
+
+# لاگ‌ها
+*.log
+npm-debug.log*

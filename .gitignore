@@ -10,6 +10,9 @@ Desktop.ini
 # وابستگی‌ها
 node_modules/
 
+# پروژه‌ی جداگانه (ریپوی خودش را دارد)
+pp/
+
 # لاگ‌ها
 *.log
 npm-debug.log*

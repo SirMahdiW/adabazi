@@ -20,6 +20,7 @@ var ASSETS = [
   'icons/icon-app.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
+  'icons/icon-maskable-512.png',
   'fonts/fonts.css',
   'fonts/Vazirmatn-arabic.woff2',
   'fonts/Vazirmatn-latin.woff2',

@@ -50,6 +50,16 @@
   function fa(n) {
     return String(n).replace(/\d/g, function (d) { return FA_DIGITS[+d]; });
   }
+  /* خواندن عدد از ورودی (ارقام فارسی یا لاتین) */
+  function faParse(s) {
+    var t = String(s == null ? '' : s).trim();
+    if (!t) return null;
+    t = t.replace(/[۰-۹]/g, function (d) { return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)); });
+    t = t.replace(/[٠-٩]/g, function (d) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)); });
+    t = t.replace(/[^\d-]/g, '');
+    var n = parseInt(t, 10);
+    return isNaN(n) ? null : n;
+  }
   function mmss(sec) {
     sec = Math.max(0, Math.round(sec));
     var m = Math.floor(sec / 60), s = sec % 60;
@@ -434,7 +444,8 @@
       d.groups = v;
       paintFoot();
     }, isBoom ? 'هر بازیکن به‌نوبت گوشی را می‌گیرد' : 'گروه‌ها به‌صورت نوبتی بازی می‌کنند');
-    var roundsStepper = stepper('تعداد دور', d.rounds, 1, 10, function (v) { d.rounds = v; }, 'هر دور یک نوبت برای هر گروه/بازیکن');
+    /* تعداد دور: بدون محدودیت (کاربر می‌تواند هر عددی را تایپ کند) */
+    var roundsStepper = stepper('تعداد دور', d.rounds, 1, null, function (v) { d.rounds = v; }, 'هر دور یک نوبت برای هر گروه/بازیکن');
     fb.appendChild(groupsStepper);
     fb.appendChild(roundsStepper);
     el.appendChild(fields);
@@ -459,9 +470,6 @@
     paintMore();
     el.appendChild(timeCard);
 
-    var tip = h('<div class="create-tip">' + Icons.get('spark') + '<span>نام‌ها خودکار ساخته می‌شوند و بعد از شروع، جریان نوبت‌ها مطابق منطق اصلی بازی پیش می‌رود.</span></div>');
-    el.appendChild(tip);
-
     var foot = h('<p class="foot" data-foot></p>');
     el.appendChild(foot);
     function paintFoot() {
@@ -479,24 +487,41 @@
     return el;
   }
 
+  /* ---------------- استپر (مقدار قابل تایپ) ---------------- */
   function stepper(label, val, min, max, onChange, sub) {
     var wrap = h(
       '<div class="field">' +
       '<div class="f-txt"><strong>' + esc(label) + '</strong>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + '</div>' +
       '<div class="stepper">' +
       '<button type="button" class="step-btn" data-dec aria-label="کاهش">' + Icons.get('minus') + '</button>' +
-      '<span class="step-val" data-val>' + fa(val) + '</span>' +
+      '<input type="text" class="step-val" data-val inputmode="numeric" autocomplete="off" spellcheck="false" aria-label="' + esc(label) + '">' +
       '<button type="button" class="step-btn" data-inc aria-label="افزایش">' + Icons.get('plus') + '</button>' +
       '</div></div>'
     );
     var v = val;
-    function paint() { wrap.querySelector('[data-val]').textContent = fa(v); }
-    wrap.querySelector('[data-dec]').addEventListener('click', function () {
-      if (v > min) { v--; paint(); onChange(v); beep('click'); vibrate(10); }
+    var input = wrap.querySelector('[data-val]');
+    function paint() { input.value = fa(v); }
+    function set(n) {
+      n = Math.round(Number(n));
+      if (!isFinite(n)) { paint(); return; }
+      if (n < min) n = min;
+      if (max != null && n > max) n = max;
+      if (n === v) { paint(); return; }
+      v = n; paint(); onChange(v); beep('click'); vibrate(10);
+    }
+    function commit() {
+      var n = faParse(input.value);
+      if (n == null) { paint(); return; }
+      set(n);
+    }
+    input.addEventListener('change', commit);
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
     });
-    wrap.querySelector('[data-inc]').addEventListener('click', function () {
-      if (v < max) { v++; paint(); onChange(v); beep('click'); vibrate(10); }
-    });
+    wrap.querySelector('[data-dec]').addEventListener('click', function () { set(v - 1); });
+    wrap.querySelector('[data-inc]').addEventListener('click', function () { set(v + 1); });
+    paint();
     return wrap;
   }
 
@@ -1619,7 +1644,7 @@
     var list = h('<div class="list u-mt-3"></div>');
     [
       ['heart', 'بدون جمع‌آوری داده', 'همه چیز روی همین دستگاه ذخیره می‌شود.', 'var(--danger)'],
-      ['book', 'منطق اپ اصلی', 'ساخت نوبت‌ها، زمان هر دسته، تعویض کلمه، خطاها و پاداش زمان.', 'var(--primary)'],
+      ['book', 'قواعد بازی', 'ساخت نوبت‌ها، زمان هر دسته، تعویض کلمه، خطاها و پاداش زمان.', 'var(--primary)'],
       ['grid', 'حالت‌ها و دسته‌ها', 'سرعتی، ضرب‌المثل، دسته‌های کلمه و ترانه + حالت ویژه‌ی بوم.', 'var(--primary-2)']
     ].forEach(function (r) {
       list.appendChild(h(

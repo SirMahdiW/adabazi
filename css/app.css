@@ -189,10 +189,11 @@ body {
 }
 .main:focus { outline: none; }
 
-/* صفحه همیشه به اندازه‌ی ناحیه‌ی دید قد می‌کشد تا داک پایین به کف بچسبد */
+/* صفحه همیشه به اندازه‌ی ناحیه‌ی دید قد می‌کشد (بدون اسکرول اضافی)
+   و فاصله‌ی پایین همان مقدار طراحی اصلی است. */
 .screen {
   min-height: 100%;
-  padding-bottom: var(--s-5);
+  padding-bottom: calc(var(--s-8) + env(safe-area-inset-bottom));
   animation: rise var(--t-slow) var(--ease-out) both;
 }
 @keyframes rise {
@@ -594,24 +595,12 @@ body {
   background: rgba(255,255,255,.9);
   box-shadow: 0 4px 10px -6px rgba(33,16,82,.18), var(--inset-highlight);
 }
-.create .step-val { min-width: 40px; font-size: 22px; font-weight: 800; color: var(--text); }
+.create .step-val { min-width: 40px; width: 56px; font-size: 22px; font-weight: 800; color: var(--text); }
 
 .create-seg { border-radius: 18px; padding: 6px; gap: 6px; background: rgba(255,255,255,.55); }
 .create-seg .chip { min-height: 46px; border-radius: 14px; font-size: 13.5px; }
 .create-seg .chip.is-on { box-shadow: var(--shadow-primary); }
 
-.create-tip {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 12px 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, .75);
-  background: linear-gradient(135deg, rgba(233, 223, 255, .55), rgba(255, 255, 255, .62));
-  box-shadow: var(--shadow-1), var(--inset-highlight);
-  color: var(--text-dim);
-  font-size: 13px;
-  line-height: 1.7;
-}
-.create-tip svg { width: 18px; height: 18px; color: var(--primary); flex: none; margin-top: 2px; }
 .create-dock { margin-top: var(--s-4); }
 
 /* ---------- کارت حالت بازی ---------- */
@@ -1500,14 +1489,6 @@ body {
 .settings-panel .panel-head { margin-bottom: 10px; }
 .settings-group { display: grid; gap: 10px; }
 .settings-link { border-radius: 18px; }
-
-/* ---------- تنظیمات: فشرده‌سازی هدفمند تا در یک نمایشگر جا شود ---------- */
-.main[data-route="settings"] .simple-screen { gap: 10px; }
-.main[data-route="settings"] .settings-panel { padding: 13px; }
-.main[data-route="settings"] .settings-panel .panel-head { margin-bottom: 8px; }
-.main[data-route="settings"] .page-hero { padding: 14px 18px; }
-.main[data-route="settings"] .page-hero-3d { width: 64px; margin-bottom: 0; }
-.main[data-route="settings"] .page-hero-3d .a3d { width: 64px; height: 64px; }
 .settings-chevron { color: var(--text-faint); display: grid; place-items: center; flex: none; }
 .settings-chevron svg { width: 18px; height: 18px; }
 .settings-panel-danger .panel-icon { color: var(--danger); background: linear-gradient(135deg, rgba(220,38,38,.14), rgba(220,38,38,.06)); }
@@ -1607,11 +1588,21 @@ body {
 .stepper { display: flex; align-items: center; gap: 6px; flex: none; }
 .stepper .step-val {
   min-width: 44px;
+  width: 56px;
+  padding: 4px 6px;
   text-align: center;
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 700;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-xs);
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
+.stepper .step-val:hover { border-color: var(--line-2); }
+.stepper .step-val:focus { border-color: var(--line-3); background: rgba(255, 255, 255, .82); }
 .step-btn {
   width: 46px; height: 46px;
   display: grid; place-items: center;

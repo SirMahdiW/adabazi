@@ -10,6 +10,14 @@ Desktop.ini
 # وابستگی‌ها
 node_modules/
 
+# کش ابزار رندر سه‌بعدی (three.js و مدل‌های GLB — با اسکریپت بازتولید می‌شود)
+assets/render-3d/.cache/
+assets/render-3d/prof-*/
+
+# فایل‌های کمکی محیط کار
+.agents/
+skills-lock.json
+
 # پروژه‌ی جداگانه (ریپوی خودش را دارد)
 pp/
 

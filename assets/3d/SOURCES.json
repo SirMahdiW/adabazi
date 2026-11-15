@@ -1,0 +1,149 @@
+{
+  "catalogue": "https://3dassets.dev",
+  "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+  "license": "CC0 1.0 Universal — https://creativecommons.org/publicdomain/zero/1.0/",
+  "note": "Rendered locally from the original CC0 GLB models with one shared camera / studio-light rig so every icon shares angle, scale, light direction and shadow direction. Transparent WebP, stored locally for offline use. No 3D engine ships in the app.",
+  "rig": {
+    "camera": "PerspectiveCamera fov 26, azimuth -20deg, elevation +15deg (identical for all models)",
+    "framing": "Bounding-sphere normalisation — every object gets the same on-screen visual weight",
+    "lights": "Key directional (upper-left-front) + violet fill (right) + rim (back) + studio env map + soft contact shadow",
+    "output": "Transparent WebP (quality 0.92), sRGB, neutral tone mapping"
+  },
+  "assets": [
+    {
+      "file": "portal-ring.webp",
+      "usage": "هیروی صفحه اصلی",
+      "renderSize": 768,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-portal-ring-cecd690a",
+      "glb": "https://cdn.3dassets.dev/assets/19045/v1/model.glb",
+      "bytes": 35386
+    },
+    {
+      "file": "scroll.webp",
+      "usage": "حالت پانتومیم / ضرب المثل",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-scroll-73cdebd0",
+      "glb": "https://cdn.3dassets.dev/assets/19007/v1/model.glb",
+      "bytes": 11782
+    },
+    {
+      "file": "explosion.webp",
+      "usage": "حالت بوم",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-explosion-glyph-5ff2e677",
+      "glb": "https://cdn.3dassets.dev/assets/19026/v1/model.glb",
+      "bytes": 15126
+    },
+    {
+      "file": "lightning.webp",
+      "usage": "دسته سرعتی",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-lightning-bolt-27f245be",
+      "glb": "https://cdn.3dassets.dev/assets/19030/v1/model.glb",
+      "bytes": 14282
+    },
+    {
+      "file": "book.webp",
+      "usage": "دسته کلمه / تاریخچه",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-book-1130def8",
+      "glb": "https://cdn.3dassets.dev/assets/19006/v1/model.glb",
+      "bytes": 11330
+    },
+    {
+      "file": "heart.webp",
+      "usage": "دسته ترانه / درباره",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-heart-4126fdc7",
+      "glb": "https://cdn.3dassets.dev/assets/18981/v1/model.glb",
+      "bytes": 12836
+    },
+    {
+      "file": "token.webp",
+      "usage": "انتخاب تصادفی",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-token-disc-235dc6df",
+      "glb": "https://cdn.3dassets.dev/assets/18978/v1/model.glb",
+      "bytes": 14970
+    },
+    {
+      "file": "star.webp",
+      "usage": "امتیاز کلمه",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-star-epic-67dd0d65",
+      "glb": "https://cdn.3dassets.dev/assets/19012/v1/model.glb",
+      "bytes": 14632
+    },
+    {
+      "file": "crosshair.webp",
+      "usage": "نوبت سرعتی",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-crosshair-6c99c448",
+      "glb": "https://cdn.3dassets.dev/assets/19024/v1/model.glb",
+      "bytes": 18906
+    },
+    {
+      "file": "hourglass.webp",
+      "usage": "تنظیم زمان",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-hourglass-9a36b877",
+      "glb": "https://cdn.3dassets.dev/assets/18993/v1/model.glb",
+      "bytes": 14442
+    },
+    {
+      "file": "rounds.webp",
+      "usage": "تعداد دور",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-level-chevron-0af71fb6",
+      "glb": "https://cdn.3dassets.dev/assets/19014/v1/model.glb",
+      "bytes": 15662
+    },
+    {
+      "file": "trophy.webp",
+      "usage": "برنده بازی",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-trophy-cup-d698f324",
+      "glb": "https://cdn.3dassets.dev/assets/18979/v1/model.glb",
+      "bytes": 14384
+    },
+    {
+      "file": "crown.webp",
+      "usage": "رتبه اول",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-gold-crown-c9fe939f",
+      "glb": "https://cdn.3dassets.dev/assets/18980/v1/model.glb",
+      "bytes": 17672
+    },
+    {
+      "file": "home.webp",
+      "usage": "بازگشت به خانه",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-home-marker-72dd3220",
+      "glb": "https://cdn.3dassets.dev/assets/19042/v1/model.glb",
+      "bytes": 13098
+    },
+    {
+      "file": "cog.webp",
+      "usage": "تنظیمات",
+      "renderSize": 512,
+      "pack": "https://3dassets.dev/packs/game-ui-icon-library",
+      "source": "https://3dassets.dev/assets/game-ui-icon-library-cog-163073a1",
+      "glb": "https://cdn.3dassets.dev/assets/19055/v1/model.glb",
+      "bytes": 15856
+    }
+  ]
+}

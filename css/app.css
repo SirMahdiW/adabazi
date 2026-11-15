@@ -1,5 +1,5 @@
 /* ============================================================
-   ادابازی — استایل اصلی
+   پانتومیم — استایل اصلی
    Premium Playful 3D · Soft Glassmorphism · Purple Aesthetic
    RTL · Mobile First
    ============================================================ */
@@ -8,9 +8,18 @@
 [hidden] { display: none !important; }
 
 html, body { height: 100%; }
+/* اسکرول عمودی داخل ناحیه‌ی محتوا (.main) انجام می‌شود، نه روی خود body.
+   نتیجه: صفحه‌های کوتاه هیچ اسکرول اضافه‌ای ندارند، داک پایین همیشه
+   در پایین ناحیه‌ی دید می‌ماند و اسکرول بین صفحه‌ها همیشه از بالا شروع می‌شود. */
+html { overflow: hidden; overflow-x: clip; }
 
 body {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-ui);
@@ -18,7 +27,6 @@ body {
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
   min-height: 100dvh;
 }
 
@@ -39,22 +47,36 @@ body {
     radial-gradient(90% 60% at 0% 100%, rgba(233,223,255,.9), transparent 50%),
     linear-gradient(165deg, #F7F3FF 0%, #FFFFFF 46%, #F1E9FF 100%);
 }
+/* لکه‌های نور پس‌زمینه — به‌جای filter: blur(80px) که روی GPU بسیار پرهزینه بود،
+   از گرادیان چندمرحله‌ای نرم استفاده می‌شود (ظاهر یکسان، رندر چند برابر سریع‌تر). */
 .aurora::before,
 .aurora::after {
   content: "";
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  will-change: opacity;
 }
 .aurora::before {
-  width: 88vw; height: 88vw;
-  top: -30vw; inset-inline-end: -24vw;
-  background: radial-gradient(circle, rgba(156, 110, 236, .30), rgba(108, 33, 237, .10) 50%, transparent 70%);
+  width: 108vw; height: 108vw;
+  top: -40vw; inset-inline-end: -34vw;
+  background: radial-gradient(circle closest-side,
+    rgba(156, 110, 236, .30) 0%,
+    rgba(146, 92, 232, .25) 28%,
+    rgba(122, 60, 232, .16) 52%,
+    rgba(108, 33, 237, .08) 72%,
+    rgba(108, 33, 237, .03) 88%,
+    transparent 100%);
 }
 .aurora::after {
-  width: 74vw; height: 74vw;
-  bottom: -26vw; inset-inline-start: -20vw;
-  background: radial-gradient(circle, rgba(233, 223, 255, .95), rgba(156, 110, 236, .16) 45%, transparent 72%);
+  width: 92vw; height: 92vw;
+  bottom: -36vw; inset-inline-start: -30vw;
+  background: radial-gradient(circle closest-side,
+    rgba(233, 223, 255, .92) 0%,
+    rgba(226, 214, 252, .78) 26%,
+    rgba(196, 172, 246, .40) 50%,
+    rgba(156, 110, 236, .16) 72%,
+    rgba(156, 110, 236, .05) 88%,
+    transparent 100%);
 }
 .aurora-grid {
   position: absolute;
@@ -102,6 +124,7 @@ body {
 .topbar {
   position: sticky;
   top: 0;
+  flex: none;
   z-index: var(--z-topbar);
   min-height: calc(var(--topbar-h) + env(safe-area-inset-top));
   display: flex;
@@ -137,9 +160,7 @@ body {
   display: grid; place-items: center;
   border-radius: var(--r-pill);
   border: 1px solid rgba(255, 255, 255, .7);
-  background: rgba(255, 255, 255, .72);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, .88);
   color: var(--text-dim);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -155,14 +176,25 @@ body {
 .main {
   position: relative;
   z-index: var(--z-main);
+  flex: 1 1 auto;
+  min-height: 0;
   max-width: var(--maxw);
+  width: 100%;
   margin: 0 auto;
-  padding: var(--s-5) var(--gutter) calc(var(--s-8) + env(safe-area-inset-bottom));
-  min-height: calc(100dvh - var(--topbar-h));
+  padding: var(--s-5) var(--gutter) 0;
+  overflow-y: auto;
+  overflow-x: clip;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .main:focus { outline: none; }
 
-.screen { animation: rise var(--t-slow) var(--ease-out) both; }
+/* صفحه همیشه به اندازه‌ی ناحیه‌ی دید قد می‌کشد تا داک پایین به کف بچسبد */
+.screen {
+  min-height: 100%;
+  padding-bottom: var(--s-5);
+  animation: rise var(--t-slow) var(--ease-out) both;
+}
 @keyframes rise {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
@@ -202,14 +234,15 @@ body {
 }
 
 /* ---------- کارت ---------- */
+/* شیشه‌ی کارت بدون backdrop-filter (که روی GPU موبایل هر کارت یک
+   snapshot از پس‌زمینه می‌گیرد و FPS اسکرول را نصف می‌کند).
+   جبران با شفافیت بالاتر سطح انجام می‌شود تا ظاهر شیشه‌ای حفظ شود. */
 .card {
   position: relative;
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, .65);
+  background: rgba(255, 255, 255, .88);
+  border: 1px solid rgba(255, 255, 255, .72);
   border-radius: var(--r-md);
   box-shadow: var(--shadow-1);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
   padding: var(--pad-card);
 }
 .card-lg { border-radius: var(--r-lg); padding: var(--pad-lg); }
@@ -266,25 +299,26 @@ body {
   box-shadow: 0 8px 20px -8px rgba(220, 38, 38, .45);
 }
 .btn-ghost {
-  --btn-bg: rgba(255, 255, 255, .55);
+  --btn-bg: rgba(255, 255, 255, .80);
   --btn-fg: var(--text-dim);
   border-color: var(--line-2);
   box-shadow: var(--shadow-1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 .btn-ghost:hover { --btn-fg: var(--text); border-color: var(--line-3); background: rgba(255, 255, 255, .85); }
 
-/* ---------- داک پایین ---------- */
+/* ---------- داک پایین (نوار اقدام چسبانِ شیشه‌ای) ---------- */
 .dock {
   position: sticky;
-  bottom: 12px;
+  bottom: 0;
   z-index: var(--z-dock);
-  margin: var(--s-5) calc(var(--gutter) * -1) 0;
-  padding: var(--s-3) var(--gutter) calc(var(--s-3) + env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, rgba(247, 243, 255, 0), rgba(247, 243, 255, .92) 38%);
+  margin: var(--s-4) calc(var(--gutter) * -1) 0;
+  padding: 14px var(--gutter) calc(14px + env(safe-area-inset-bottom));
   display: flex;
   gap: var(--s-2);
+  /* محو نرم به سمت پس‌زمینه‌ی صفحه — بدون مستطیل سفید */
+  background: linear-gradient(180deg, rgba(247, 243, 255, 0) 0%, rgba(247, 243, 255, .48) 46%, rgba(247, 243, 255, .88) 100%);
+  -webkit-backdrop-filter: blur(16px) saturate(155%);
+  backdrop-filter: blur(16px) saturate(155%);
 }
 .dock .btn { flex: 1; }
 
@@ -359,8 +393,6 @@ body {
   border-radius: var(--r-xl);
   border: 1px solid var(--glass-border);
   background: var(--grad-hero);
-  backdrop-filter: blur(var(--blur-md)) saturate(145%);
-  -webkit-backdrop-filter: blur(var(--blur-md)) saturate(145%);
   box-shadow: var(--shadow-2), var(--inset-highlight);
 }
 .eyebrow {
@@ -453,6 +485,67 @@ body {
 .mode-card-boom { background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(245,238,255,.78)); }
 .home-stats { margin-top: 0; }
 
+/* ---------- خلاصه‌ی نتیجه سرعتی ---------- */
+.speed-summary { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 12px; }
+.speed-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.speed-chip b { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--text); line-height: 1; }
+.speed-chip.is-ok { background: var(--success-soft); border-color: rgba(22, 163, 74, .2); }
+.speed-chip.is-ok b { color: var(--success); }
+.speed-chip.is-no { background: var(--danger-soft); border-color: rgba(220, 38, 38, .18); }
+.speed-chip.is-no b { color: var(--danger); }
+.speed-list { max-height: 32vh; overflow: auto; }
+
+/* ---------- انتقال نوبت ---------- */
+.handover-screen { display: flex; flex-direction: column; gap: 14px; }
+.handover-hero {
+  padding: 18px;
+  border-radius: 26px;
+  border-color: color-mix(in srgb, var(--team, var(--primary)) 26%, transparent);
+  background:
+    radial-gradient(120% 100% at 100% -10%, color-mix(in srgb, var(--team, var(--primary)) 16%, transparent), transparent 60%),
+    var(--grad-surface);
+  box-shadow: var(--shadow-2), var(--inset-highlight);
+}
+.handover-top { display: flex; align-items: center; gap: 14px; }
+.handover-3d {
+  flex: none;
+  width: 74px; height: 74px;
+  display: grid; place-items: center;
+  border-radius: 22px;
+  background: radial-gradient(120% 120% at 50% 8%, rgba(255, 255, 255, .95), color-mix(in srgb, var(--team, var(--primary)) 12%, #fff));
+  border: 1px solid rgba(255, 255, 255, .8);
+  box-shadow: 0 12px 22px -14px color-mix(in srgb, var(--team, var(--primary)) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+.handover-3d .a3d { width: 64px; height: 64px; }
+.handover-copy { min-width: 0; flex: 1; }
+.handover-copy .eyebrow { margin-bottom: 2px; }
+.handover-copy h1 {
+  margin: 2px 0 4px;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 6.4vw, 32px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  color: var(--team, var(--primary));
+}
+.handover-copy p { margin: 0; color: var(--text-dim); font-size: 13.5px; }
+.handover-board .team-row.is-next {
+  border-color: color-mix(in srgb, var(--team, var(--primary)) 34%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--team, var(--primary)) 14%, transparent), var(--shadow-1), var(--inset-highlight);
+}
+.handover-dock { margin-top: 2px; }
+
 /* ---------- صفحه ساخت بازی ---------- */
 .create { display: flex; flex-direction: column; gap: 14px; }
 .create-hero { padding: 18px; }
@@ -511,14 +604,15 @@ body {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 12px 14px;
   border-radius: 18px;
-  border: 1px dashed rgba(108,33,237,.22);
-  background: rgba(233,223,255,.35);
+  border: 1px solid rgba(255, 255, 255, .75);
+  background: linear-gradient(135deg, rgba(233, 223, 255, .55), rgba(255, 255, 255, .62));
+  box-shadow: var(--shadow-1), var(--inset-highlight);
   color: var(--text-dim);
   font-size: 13px;
   line-height: 1.7;
 }
 .create-tip svg { width: 18px; height: 18px; color: var(--primary); flex: none; margin-top: 2px; }
-.create-dock { margin-top: 2px; }
+.create-dock { margin-top: var(--s-4); }
 
 /* ---------- کارت حالت بازی ---------- */
 .mode-card {
@@ -529,8 +623,6 @@ body {
   border-radius: 24px;
   border: 1px solid var(--glass-border);
   background: var(--grad-surface);
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
   box-shadow: var(--shadow-1), var(--inset-highlight);
   color: inherit;
   font: inherit;
@@ -856,11 +948,9 @@ body {
     radial-gradient(110% 80% at 100% -10%, rgba(156, 110, 236, .22), transparent 55%),
     radial-gradient(90% 70% at 0% 110%, rgba(233, 223, 255, .85), transparent 55%),
     var(--grad-surface);
-  backdrop-filter: blur(var(--blur-md)) saturate(145%);
-  -webkit-backdrop-filter: blur(var(--blur-md)) saturate(145%);
   box-shadow: var(--shadow-2), var(--inset-highlight);
   text-align: center;
-  overflow: hidden;
+  overflow: visible;
 }
 .spotlight .w-meta { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 6px; }
 .spotlight .w-main { flex: 1; min-width: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
@@ -925,6 +1015,7 @@ body {
   gap: 10px;
   margin-top: 4px;
 }
+.controls:empty { display: none; }
 .controls .btn {
   min-height: 72px;
   flex-direction: column;
@@ -956,7 +1047,8 @@ body {
 /* ---------- نوار وضعیت چسبان (HUD) ---------- */
 .hud {
   position: sticky;
-  top: calc(var(--topbar-h) + env(safe-area-inset-top) + 8px);
+  /* نوار بالا بیرون از ناحیه‌ی اسکرول است؛ پس فقط فاصله‌ی کوچک لازم است */
+  top: var(--s-2);
   z-index: 5;
   margin: 0 0 var(--s-3);
   padding: 10px 12px;
@@ -1072,9 +1164,7 @@ body {
   padding-inline-start: 38px;
   border-radius: var(--r-pill);
   border: 1px solid var(--line-2);
-  background: rgba(255, 255, 255, .82);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, .92);
   color: var(--text);
   font-family: var(--font-ui);
   font-size: var(--fs-sm);
@@ -1086,6 +1176,7 @@ body {
 
 /* ---------- چیدمان بازی (Play/Boom) ---------- */
 .play-landscape { display: flex; flex-direction: column; gap: 14px; }
+.play-landscape > * { flex: none; }
 .play-side { display: flex; flex-direction: column; gap: 12px; }
 .play-side .controls { margin-top: 0; }
 .play-side #big-btn { min-height: 62px; font-size: 16px; border-radius: 18px; }
@@ -1123,8 +1214,6 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: 22px;
   background: var(--grad-surface);
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
   box-shadow: var(--shadow-1), var(--inset-highlight);
   color: var(--text);
   font: inherit;
@@ -1411,6 +1500,14 @@ body {
 .settings-panel .panel-head { margin-bottom: 10px; }
 .settings-group { display: grid; gap: 10px; }
 .settings-link { border-radius: 18px; }
+
+/* ---------- تنظیمات: فشرده‌سازی هدفمند تا در یک نمایشگر جا شود ---------- */
+.main[data-route="settings"] .simple-screen { gap: 10px; }
+.main[data-route="settings"] .settings-panel { padding: 13px; }
+.main[data-route="settings"] .settings-panel .panel-head { margin-bottom: 8px; }
+.main[data-route="settings"] .page-hero { padding: 14px 18px; }
+.main[data-route="settings"] .page-hero-3d { width: 64px; margin-bottom: 0; }
+.main[data-route="settings"] .page-hero-3d .a3d { width: 64px; height: 64px; }
 .settings-chevron { color: var(--text-faint); display: grid; place-items: center; flex: none; }
 .settings-chevron svg { width: 18px; height: 18px; }
 .settings-panel-danger .panel-icon { color: var(--danger); background: linear-gradient(135deg, rgba(220,38,38,.14), rgba(220,38,38,.06)); }
@@ -1498,11 +1595,9 @@ body {
   align-items: center;
   gap: var(--s-3);
   padding: var(--s-4);
-  border: 1px solid rgba(255, 255, 255, .65);
+  border: 1px solid rgba(255, 255, 255, .72);
   border-radius: var(--r-md);
-  background: rgba(255, 255, 255, .78);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, .88);
   box-shadow: var(--shadow-1);
 }
 .field + .field { margin-top: var(--s-2); }
@@ -1542,6 +1637,16 @@ body {
   line-height: 2;
 }
 
+/* ---------- کانفتی (جشن پایان بازی) ---------- */
+#confetti-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 70;
+}
+
 /* ---------- توست ---------- */
 .toast-region {
   position: fixed;
@@ -1551,6 +1656,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
   pointer-events: none;
   padding-inline: var(--gutter);
@@ -1685,11 +1791,122 @@ body {
   }
 }
 
+/* ============================================================
+   آسن‌های سه‌بعدی (رندر WebP محلی — بدون موتور رندر در اپ)
+   ============================================================ */
+.a3d {
+  display: block;
+  object-fit: contain;
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+.a3d-hero { width: 120px; height: 120px; }
+.a3d-lg { width: 62px; height: 62px; }
+.a3d-md { width: 44px; height: 44px; }
+.a3d-sm { width: 30px; height: 30px; }
+.a3d-xs { width: 17px; height: 17px; }
+
+/* ماسکت هیرو — از گوشه‌ی کارت بیرون می‌زند (پشت محتوا) */
+.hero-mascot {
+  position: absolute;
+  inset-block-end: -24px;
+  inset-inline-end: -12px;
+  z-index: 0;
+  margin: 0;
+  pointer-events: none;
+}
+.hero-mascot .a3d {
+  width: 132px;
+  height: 132px;
+}
+.hero-mascot::before {
+  content: "";
+  position: absolute;
+  inset-block-end: 6px;
+  inset-inline-end: 4px;
+  width: 120px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(108, 33, 237, .22), transparent 70%);
+  filter: blur(8px);
+  z-index: -1;
+}
+.hero-home .hero-actions .btn { max-width: 70%; }
+
+/* نگهدارنده‌ی ماسکت (کارت حالت بازی و هیرو ساخت) */
+.mode-mascot {
+  display: grid;
+  place-items: center;
+  width: 58px; height: 58px;
+  flex: none;
+  border-radius: 18px;
+  background: radial-gradient(120% 120% at 50% 8%, rgba(255, 255, 255, .95), rgba(233, 223, 255, .55));
+  border: 1px solid rgba(255, 255, 255, .78);
+  box-shadow: 0 10px 18px -12px rgba(108, 33, 237, .5), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+.mode-mascot .a3d { width: 58px; height: 58px; }
+.create-mascot { width: 70px; height: 70px; border-radius: 20px; }
+.create-mascot .a3d { width: 64px; height: 64px; }
+
+/* پنل‌ها و هیروهای ساده */
+.panel-icon-3d { padding: 0; }
+.panel-icon-3d .a3d { width: 38px; height: 38px; }
+.page-hero-3d { display: block; width: 84px; margin: 0 auto 2px; }
+.page-hero-3d .a3d { width: 84px; height: 84px; }
+.rank-3d { display: block; width: 104px; margin: 0 auto 2px; }
+.rank-3d .a3d { width: 104px; height: 104px; }
+.category-3d { flex: none; width: 64px; }
+.category-3d .a3d { width: 64px; height: 64px; }
+.category-intro-main { display: flex; align-items: center; gap: 14px; }
+.category-intro-copy { min-width: 0; flex: 1; }
+.cat-ic-3d { background: rgba(255, 255, 255, .6); }
+.cat-ic-3d .a3d { width: 46px; height: 46px; }
+.cat-group-3d { flex: none; width: 34px; height: 34px; margin-inline-end: 2px; }
+.play-3d { flex: none; width: 34px; height: 34px; }
+.boom-3d { flex: none; width: 38px; height: 38px; }
+.rank-action-3d { width: 46px; height: 46px; border-radius: 14px; }
+.rank-action-3d .a3d { width: 38px; height: 38px; }
+.podium .pod { position: relative; }
+.p-crown { position: absolute; inset-block-start: -15px; inset-inline-start: 50%; transform: translateX(50%); z-index: 2; }
+.p-crown .a3d { width: 38px; height: 38px; }
+.podium .pod-1 { padding-block-start: 26px; }
+.spotlight .w-head { gap: 6px; }
+.boom-mark { display: inline-flex; align-items: center; gap: 8px; }
+.boom-mark .a3d { width: 46px; height: 46px; }
+.score-badge { gap: 6px; }
+.score-badge .a3d { width: 21px; height: 21px; }
+.hud-round .a3d { opacity: .92; }
+.stats-title .a3d { flex: none; }
+
+@media (min-width: 560px) {
+  .hero-mascot .a3d { width: 168px; height: 168px; }
+  .hero-mascot { inset-block-end: -34px; inset-inline-end: -18px; }
+  .hero-home .hero-actions .btn { max-width: 62%; }
+}
+
 /* ---------- واکنش‌گرایی ---------- */
 @media (max-width: 380px) {
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .podium { gap: 6px; }
+  .hero-mascot .a3d { width: 104px; height: 104px; }
+  .hero-home .hero-actions .btn { max-width: 78%; }
+  .mode-mascot { width: 52px; height: 52px; border-radius: 16px; }
+  .mode-mascot .a3d { width: 44px; height: 44px; }
+
+  /* فشرده‌سازی هدفمند صفحه‌ی اصلی در موبایل کوچک (بدون حذف اطلاعات مهم) */
+  .main[data-route="home"] { padding-bottom: 34px; }
+  .hero-home p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .home-section-head p { display: none; }
+  .home-stats { padding: 10px 12px; }
+  .home-stats .sc-mini { min-height: 40px; padding: 5px 4px; }
+  .home-stats .sc-mini b { font-size: 17px; }
 }
 
 /* گرید کارت‌های اقدام (نتیجه‌ی بازی) — روی موبایل هم گرید است تا دکمه‌ها تمام‌عرض شوند */
@@ -1712,6 +1929,8 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--s-3);
+  align-items: stretch;
 }
 .bento-2 > * { min-width: 0; }
+.mode-card { height: 100%; }
 @media (min-width: 768px) { .bento-2 { gap: var(--s-4); } }

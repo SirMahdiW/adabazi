@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>3D icon renderer</title>
+<script type="importmap">{"imports":{"three":"./.cache/three.module.js"}}</script>
+<style>html,body{margin:0;background:#0000}</style>
+</head><body>
+<script>
+window.addEventListener('error', function (e) { console.log('PAGEERR ' + e.message + ' @ ' + e.filename + ':' + e.lineno); });
+window.addEventListener('unhandledrejection', function (e) { console.log('REJECT ' + (e.reason && e.reason.message ? e.reason.message : e.reason)); });
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './.cache/GLTFLoader.js';
+import { RoomEnvironment } from './.cache/RoomEnvironment.js';
+
+/* ---------- ریگ مشترک: یک دوربین، یک نور، یک قاب‌بندی برای همه ---------- */
+const RIG = {
+  fov: 26,                 // زاویه‌ی دید یکسان
+  azimuth: -20,            // درجه — چرخش یکسان حول محور عمودی
+  elevation: 15,           // درجه — زاویه‌ی بالا یکسان
+  fill: 1.02,              // نسبت اندازه‌ی آبجکت در قاب (یکسان برای همه)
+  near: 0.1, far: 100
+};
+
+const MODELS = [
+  { id: 19045, key: 'portal-ring', size: 768 },
+  { id: 19007, key: 'scroll',      size: 512 },
+  { id: 19026, key: 'explosion',   size: 512 },
+  { id: 19030, key: 'lightning',  size: 512 },
+  { id: 19006, key: 'book',        size: 512 },
+  { id: 18981, key: 'heart',       size: 512 },
+  { id: 18978, key: 'token',       size: 512 },
+  { id: 19012, key: 'star',        size: 512 },
+  { id: 19024, key: 'crosshair',   size: 512 },
+  { id: 18993, key: 'hourglass',   size: 512 },
+  { id: 19014, key: 'rounds',      size: 512 },
+  { id: 18979, key: 'trophy',      size: 512 },
+  { id: 18980, key: 'crown',       size: 512 },
+  { id: 19042, key: 'home',        size: 512 },
+  { id: 19055, key: 'cog',         size: 512 }
+];
+
+const loader = new GLTFLoader();
+const results = [];
+const meta = [];
+
+function buildScene(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
+  renderer.setClearColor(0x000000, 0);
+  renderer.setPixelRatio(1);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+
+  /* محیط استودیویی یکسان برای بازتاب‌های براق */
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
+  scene.environment = envRT.texture;
+  scene.environmentIntensity = 0.42;
+
+  /* نورپردازی استودیویی یکسان: کلید از بالا-چپ، فیل بنفش از راست، لبه از پشت */
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xe4d9ff, 0.26);
+  scene.add(hemi);
+
+  const key = new THREE.DirectionalLight(0xffffff, 3.4);
+  key.position.set(-1.25, 1.6, 1.25);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.bias = -0.0016;
+  key.shadow.normalBias = 0.02;
+  scene.add(key);
+
+  const fill = new THREE.DirectionalLight(0xcbb6ff, 0.5);
+  fill.position.set(1.5, 0.35, 0.85);
+  scene.add(fill);
+
+  const rim = new THREE.DirectionalLight(0xffffff, 1.5);
+  rim.position.set(0.35, 0.95, -1.5);
+  scene.add(rim);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.04));
+
+  /* سایه‌ی تماس نرم روی یک سطح شیشه‌ای */
+  const shadowPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(6, 6),
+    new THREE.ShadowMaterial({ opacity: 0.22 })
+  );
+  shadowPlane.rotation.x = -Math.PI / 2;
+  shadowPlane.receiveShadow = true;
+  scene.add(shadowPlane);
+
+  const camera = new THREE.PerspectiveCamera(RIG.fov, 1, RIG.near, RIG.far);
+  return { canvas, renderer, scene, camera, key, shadowPlane };
+}
+
+function frameObject(camera, key, box) {
+  /* مرکز و شعاع کره‌ی محیطی مدل */
+  const center = box.getCenter(new THREE.Vector3());
+  const sphere = box.getBoundingSphere(new THREE.Sphere());
+  const radius = Math.max(sphere.radius, 1e-4);
+
+  /* قاب‌بندی یکسان: اندازه‌ی ظاهری همه‌ی آبجکت‌ها برابر */
+  const half = Math.tan((camera.fov * Math.PI / 180) / 2);
+  const dist = (radius / RIG.fill) / half;
+
+  const az = RIG.azimuth * Math.PI / 180;
+  const el = RIG.elevation * Math.PI / 180;
+  const dir = new THREE.Vector3(
+    Math.sin(az) * Math.cos(el),
+    Math.sin(el),
+    Math.cos(az) * Math.cos(el)
+  );
+  camera.position.copy(center).addScaledVector(dir, dist);
+  camera.lookAt(center);
+  camera.near = Math.max(0.05, dist - radius * 3);
+  camera.far = dist + radius * 4;
+  camera.updateProjectionMatrix();
+
+  /* سایه در پای آبجکت */
+  key.target.position.copy(center);
+  key.target.updateMatrixWorld();
+  const s = key.shadow.camera;
+  s.left = -radius * 1.6; s.right = radius * 1.6;
+  s.top = radius * 1.6; s.bottom = -radius * 1.6;
+  s.near = 0.01; s.far = radius * 8;
+  s.updateProjectionMatrix();
+  key.shadow.camera.updateProjectionMatrix();
+
+  return { center, radius, dist, size: [box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z] };
+}
+
+async function renderOne(cfg) {
+  const rig = buildScene(cfg.size);
+  const gltf = await new Promise((res, rej) => loader.load('.cache/models/' + cfg.id + '.glb', res, undefined, rej));
+  const root = gltf.scene;
+  root.traverse(o => {
+    if (o.isMesh) {
+      o.castShadow = true;
+      o.receiveShadow = false;
+      if (o.material) {
+        o.material.envMapIntensity = 1;
+        if (o.material.metalness !== undefined) o.material.metalness = Math.min(o.material.metalness, 0.6);
+        if (o.material.roughness !== undefined) o.material.roughness = Math.max(o.material.roughness, 0.22);
+        o.material.needsUpdate = true;
+      }
+    }
+  });
+
+  const box = new THREE.Box3().setFromObject(root);
+  const info = frameObject(rig.camera, rig.key, box);
+  rig.shadowPlane.position.set(info.center.x, box.min.y - info.radius * 0.02, info.center.z);
+  rig.scene.add(root);
+
+  rig.renderer.render(rig.scene, rig.camera);
+  await new Promise(r => requestAnimationFrame(r));
+  rig.renderer.render(rig.scene, rig.camera);
+
+  const url = rig.canvas.toDataURL('image/webp', 0.92);
+  results.push({ key: cfg.key, id: cfg.id, dataUrl: url, size: cfg.size });
+  meta.push({ key: cfg.key, id: cfg.id, bbox: info.size.map(v => +v.toFixed(3)), radius: +info.radius.toFixed(3), dist: +info.dist.toFixed(3) });
+
+  rig.renderer.dispose();
+  return true;
+}
+
+(async () => {
+  for (const cfg of MODELS) {
+    try { await renderOne(cfg); console.log('OK ' + cfg.key); } catch (e) { console.log('ERR ' + cfg.key + ' ' + e.message); }
+  }
+  window.__RENDERED__ = { count: results.length, meta };
+  window.__IMAGES__ = results;
+  window.__DONE__ = true;
+  document.title = 'READY';
+})();
+</script></body></html>
